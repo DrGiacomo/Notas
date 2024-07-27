@@ -79,7 +79,7 @@ class ProfesoreController extends Controller
      */
     public function update(Request $request,$id)
     {
-        //
+        //  
         $request->validate([
             'Nombre' => 'required|max:255',
             'Apellido' => 'required|max:255',
