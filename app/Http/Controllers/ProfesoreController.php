@@ -2,112 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\profesore;
+use App\Http\Requests\ProfesorRequest;
 use App\Models\Curso;
-use Illuminate\Http\Request;
+use App\Models\Profesor;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class ProfesoreController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct()
     {
-        //
-        $profesor = Profesore::all();
-        return view('profesores.index', ['profesor' => $profesor]);
-
+        $this->middleware('auth');
+        $this->middleware('role:ADMINISTRADOR');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function index(): View
     {
-        //
-        return view('profesores.create',['cursos' =>Curso::all()]);
-
+        return view('profesores.index', ['profesor' => Profesor::with('cursos')->paginate(15)]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function create(): View
     {
-        //
-        $request->validate([
-            'Nombre' => 'required|max:255',
-            'Apellido' => 'required|max:255',
-            'Correo' => 'required|max:255',
-            'Telefono' => 'required|max:255',
-            'id_cursos' => 'required',
-
-
-        ]);
-
-        $profesor = new Profesore();
-        $profesor->Nombre=$request->input('Nombre');
-        $profesor->Apellido=$request->input('Apellido');
-        $profesor->Correo=$request->input('Correo');
-        $profesor->Telefono=$request->input('Telefono');
-        $profesor->id_cursos=$request->input('id_cursos');
-        $profesor->save();
-
-        return view("profesores.message",['msg'=>"El resgitro a sido guarado con exitos"]);
+        return view('profesores.create', ['cursos' => Curso::all()]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(profesore $profesore)
+    public function store(ProfesorRequest $request): RedirectResponse
     {
-        //
+        Profesor::create($request->validated());
+
+        return redirect()->route('profesores.index')
+            ->with('msg', 'El registro se ha guardado con éxito.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
+    public function edit(Profesor $profesore): View
     {
-        //
-        $profesor=Profesore::find($id);
-        return view('profesores.edit',['profesor'=>$profesor, 'cursos' =>Curso::all()]);
+        return view('profesores.edit', ['profesor' => $profesore, 'cursos' => Curso::all()]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request,$id)
+    public function update(ProfesorRequest $request, Profesor $profesore): RedirectResponse
     {
-        //  
-        $request->validate([
-            'Nombre' => 'required|max:255',
-            'Apellido' => 'required|max:255',
-            'Correo' => 'required|max:255',
-            'Telefono' => 'required|max:255',
-            'id_cursos' => 'required',
+        $profesore->update($request->validated());
 
-
-        ]);
-
-        $profesor = Profesore::find($id);
-        $profesor->Nombre=$request->input('Nombre');
-        $profesor->Apellido=$request->input('Apellido');
-        $profesor->Correo=$request->input('Correo');
-        $profesor->Telefono=$request->input('Telefono');
-        $profesor->id_cursos=$request->input('id_cursos');
-        $profesor->save();
-
-        return view("profesores.message",['msg'=>"El resgistro a sido guarado con exitos"]);
+        return redirect()->route('profesores.index')
+            ->with('msg', 'El registro se ha actualizado con éxito.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
+    public function destroy(Profesor $profesore): RedirectResponse
     {
-        //
-        Profesore::destroy($id);
-        return redirect('profesores');
+        $profesore->delete();
+
+        return redirect()->route('profesores.index')
+            ->with('msg', 'El registro se ha eliminado.');
     }
 }

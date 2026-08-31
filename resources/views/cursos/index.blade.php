@@ -5,6 +5,8 @@
 <main>
      <div class="container py-4">
        <h2>Listado de cursos </h2>
+       @include('partials.aviso')
+
        <a href="{{url('cursos/create')}}" class="btn btn-primary btn-sm">Nuevo registro</a>
        <table class="table table-light">
         <thead class="thead-light">
@@ -39,6 +41,8 @@
             @endforeach
         </tbody>
     </table>
+
+       {{ $curso->links() }}
      </div>
 
 

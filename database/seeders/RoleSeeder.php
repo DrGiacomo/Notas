@@ -2,30 +2,37 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Antes buscaba User::find(1), find(2) y find(3) sin comprobar el resultado:
+     * con la tabla ya poblada, el seeder moría a mitad y dejaba los roles creados
+     * pero sin asignar. Ahora busca por el correo que fija DatabaseSeeder.
      */
     public function run(): void
     {
-        //
-                //CREAR ROLES
-                $rol1 = Role::create(['name' => 'ADMINISTRADOR']);
-                $rol2 = Role::create(['name' => 'PROFESOR']);
-                $rol3 = Role::create(['name' => 'ESTUDIANTE']);
+        $asignaciones = [
+            'test@example.com' => 'ADMINISTRADOR',
+            'profesor@example.com' => 'PROFESOR',
+            'estudiante@example.com' => 'ESTUDIANTE',
+        ];
 
-                // asignar roles
-                $usuario = \App\Models\User::find(1);
-                $usuario->assignRole($rol1);
-                $usuario = \App\Models\User::find(2);
-                $usuario->assignRole($rol2);
-                $usuario = \App\Models\User::find(3);
-                $usuario->assignRole($rol3);
+        foreach ($asignaciones as $correo => $rol) {
+            Role::findOrCreate($rol);
 
+            $usuario = User::where('email', $correo)->first();
+
+            if (! $usuario) {
+                $this->command->warn("No existe el usuario $correo: rol $rol sin asignar.");
+
+                continue;
+            }
+
+            $usuario->assignRole($rol);
+        }
     }
 }

@@ -9,6 +9,7 @@
         <h2>Registrar Curso</h2>
 
         <form action="{{ url('estudiantes') }}" method="post">
+            @include('partials.aviso')
 
             @csrf
             <div class="md-3 row">
@@ -34,7 +35,7 @@
                 </select>
             </div>
               <a href="{{ url('estudiantes') }}"  class="btn btn-secondary">Regresar</a>
-              <button type="sumit" class="btn btn-success">Guardar</button>
+              <button type="submit" class="btn btn-success">Guardar</button>
     </div>
 
 

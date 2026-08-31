@@ -2,119 +2,72 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\nota;
+use App\Http\Requests\NotaRequest;
 use App\Models\Estudiante;
-use Illuminate\Http\Request;
+use App\Models\Nota;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class NotaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct()
     {
-        //
-        $nota=Nota::all();
-        return view('notas.index',['notas'=>$nota]);
+        $this->middleware('auth');
+        // El estudiante entra al listado; solo mira. Editar es de profesor para arriba.
+        $this->middleware('role:ADMINISTRADOR|PROFESOR')->except('index');
+    }
+
+    public function index(): View
+    {
+        return view('notas.index', ['notas' => Nota::with('estudiantes')->paginate(15)]);
+    }
+
+    public function create(): View
+    {
+        return view('notas.create', ['estudiante' => Estudiante::all()]);
+    }
+
+    public function store(NotaRequest $request): RedirectResponse
+    {
+        Nota::create($this->conDefinitiva($request->validated()));
+
+        return redirect()->route('notas.index')
+            ->with('msg', 'El registro se ha guardado con éxito.');
+    }
+
+    public function edit(Nota $nota): View
+    {
+        return view('notas.edit', ['nota' => $nota, 'estudiante' => Estudiante::all()]);
+    }
+
+    public function update(NotaRequest $request, Nota $nota): RedirectResponse
+    {
+        $nota->update($this->conDefinitiva($request->validated()));
+
+        return redirect()->route('notas.index')
+            ->with('msg', 'El registro se ha actualizado con éxito.');
+    }
+
+    public function destroy(Nota $nota): RedirectResponse
+    {
+        $nota->delete();
+
+        return redirect()->route('notas.index')
+            ->with('msg', 'El registro se ha eliminado.');
     }
 
     /**
-     * Show the form for creating a new resource.
+     * @param  array<string,mixed>  $datos
+     * @return array<string,mixed>
      */
-    public function create()
+    private function conDefinitiva(array $datos): array
     {
-        //
-        return view('notas.create', ['estudiante' =>Estudiante::all()]);
-    }
+        $datos['definitiva'] = Nota::calcularDefinitiva(
+            (float) $datos['nota1'],
+            (float) $datos['nota2'],
+            (float) $datos['nota3'],
+        );
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-        $request->validate([
-            'nota1' => 'required|max:10',
-            'nota2' => 'required|max:255',
-            'nota3' => 'required|max:233',
-            'definitiva' => 'nullable',
-            'id_estudiantes' => 'required',
-
-        ]);
-
-        $nota1 = $request->input('nota1');
-        $nota2 = $request->input('nota2');
-        $nota3 = $request->input('nota3');
-        $definitiva=($nota1+$nota2+$nota3)/3;
-
-        $nota = new Nota();
-        $nota->nota1=$nota1;
-        $nota->nota2=$nota2;
-        $nota->nota3=$nota3;
-        $nota->definitiva=$definitiva;
-        $nota->id_estudiantes=$request->input('id_estudiantes');
-        $nota->save();
-
-        return view("notas.message",['msg'=>"El resgitro a sido guaraddo con exitos"]);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(nota $nota)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        //
-        $nota=Nota::find($id);
-        return view('notas.edit',['nota'=>$nota, 'estudiante'=>Estudiante::all()]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request,$id)
-    {
-        //
-        $request->validate([
-            'nota1' => 'required|max:10',
-            'nota2' => 'required|max:255',
-            'nota3' => 'required|max:255',
-            'id_estudiantes' => 'required',
-
-        ]);
-
-        $nota = Nota::find($id);
-
-        $nota1 = $request->input('nota1');
-        $nota2 = $request->input('nota2');
-        $nota3 = $request->input('nota3');
-        $definitiva=($nota1+$nota2+$nota3)/3;
-
-
-        $nota->nota1=$nota1;
-        $nota->nota2=$nota2;
-        $nota->nota3=$nota3;
-        $nota->definitiva=$definitiva;
-        $nota->id_estudiantes=$request->input('id_estudiantes');
-        $nota->save();
-
-        return view("notas.message",['msg'=>"El resgistro a sido guarado con exitos"]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
-        Nota::destroy($id);
-        return redirect('notas');
+        return $datos;
     }
 }

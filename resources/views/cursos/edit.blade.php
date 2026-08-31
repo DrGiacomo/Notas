@@ -6,7 +6,8 @@
     <div class="container py-4">
         <h2>Registrar Curso</h2>
 
-        <form action="{{ url('cursos/'.$curso->id) }}" method="post">
+        <form action="{{ route('cursos.update', $curso) }}" method="post">
+            @include('partials.aviso')
             @method("PUT")
             @csrf
 
@@ -42,7 +43,7 @@
                 </div>
 
                 <a href="{{ url('cursos') }}"  class="btn btn-secondary">Regresar</a>
-                <button type="sumit" class="btn btn-success">Guardar</button>
+                <button type="submit" class="btn btn-success">Guardar</button>
 
         </form>
 

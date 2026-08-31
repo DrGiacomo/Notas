@@ -2,18 +2,17 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Antes '/' devolvía view('auth.login') directamente: la misma página de
+     * login vivía en dos URLs distintas y solo una tenía nombre de ruta.
+     * Ahora redirige, así que el 200 de este test pasó a ser un 302.
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_la_raiz_lleva_al_login(): void
     {
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
+        $this->get('/')->assertRedirect(route('login'));
     }
 }

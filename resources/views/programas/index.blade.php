@@ -7,6 +7,8 @@
 <main>
      <div class="container py-4">
        <h2>Listado de programas</h2>
+       @include('partials.aviso')
+
        <a href="{{url('programas/create')}}" class="btn btn-primary btn-sm">Nuevo registro</a>
        <table class="table table-light">
         <thead class="thead-light">
@@ -37,6 +39,8 @@
             @endforeach
         </tbody>
     </table>
+
+       {{ $programas->links() }}
      </div>
 
 

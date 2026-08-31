@@ -6,6 +6,7 @@
         <h2>Registrar Programa</h2>
 
         <form action="{{ url('programas') }}" method="post">
+            @include('partials.aviso')
             @csrf
 
              <div class="md-3 row">
@@ -15,7 +16,7 @@
                   </div>
               </div>
               <a href="{{ url('programas') }}"  class="btn btn-secondary">Regresar</a>
-              <button type="sumit" class="btn btn-success">Guardar</button>
+              <button type="submit" class="btn btn-success">Guardar</button>
     </div>
     </form>
     </div>

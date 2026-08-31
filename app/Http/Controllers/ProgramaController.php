@@ -2,94 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\programa;
-use Illuminate\Http\Request;
+use App\Http\Requests\ProgramaRequest;
+use App\Models\Programa;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class ProgramaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct()
     {
-        //
-        $programa = Programa::all();
-        return view('programas.index', ['programas' => $programa]);
-
+        $this->middleware('auth');
+        $this->middleware('role:ADMINISTRADOR');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function index(): View
     {
-        //
+        return view('programas.index', ['programas' => Programa::paginate(15)]);
+    }
+
+    public function create(): View
+    {
         return view('programas.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(ProgramaRequest $request): RedirectResponse
     {
-        //
-        $request->validate([
-            'nom_programa' => 'required|max:255',
+        Programa::create($request->validated());
 
-
-        ]);
-
-        $programa = new Programa();
-        $programa->nom_programa=$request->input('nom_programa');
-        $programa->save();
-
-        return view("programas.message",['msg'=>"El resgitro a sido guarado con exitos"]);
-    }
-        
-    /**
-     * Display the specified resource.
-     */
-    public function show(programa $programa)
-    {
-        //
+        return redirect()->route('programas.index')
+            ->with('msg', 'El registro se ha guardado con éxito.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
+    public function edit(Programa $programa): View
     {
-        //
-        $programa=Programa::find($id);
-        return view('programas.edit',['programa'=>$programa]);
+        return view('programas.edit', ['programa' => $programa]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request,$id)
+    public function update(ProgramaRequest $request, Programa $programa): RedirectResponse
     {
-        //
-            $request->validate([
-                'nom_programa' => 'required|max:255',
+        $programa->update($request->validated());
 
-
-            ]);
-
-            $programa = Programa::find($id);
-            $programa->nom_programa=$request->input('nom_programa');
-            $programa->save();
-
-            return view("programas.message",['msg'=>"El resgistro a sido guarado con exitos"]);
+        return redirect()->route('programas.index')
+            ->with('msg', 'El registro se ha actualizado con éxito.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
+    public function destroy(Programa $programa): RedirectResponse
     {
-        //
-        Programa::destroy($id);
-        return redirect('programas');
+        $programa->delete();
+
+        return redirect()->route('programas.index')
+            ->with('msg', 'El registro se ha eliminado.');
     }
 }
